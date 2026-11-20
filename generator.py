@@ -302,7 +302,7 @@ def generate_aviso(data: Dict[str, Any]) -> BytesIO:
     # ========== 10. CONTRATAÇÃO ==========
     add_heading_custom(doc, "10. DA CONTRATAÇÃO", level=1)
     add_item(doc, "10.1.", "Após a homologação e adjudicação, caso se conclua pela contratação, será firmado Termo de Contrato ou emitido instrumento equivalente.")
-    add_item(doc, "10.2.", f"O adjudicatário terá o prazo de {data.get('prazo_assinatura_contrato', '5')} ({data.get('prazo_assinatura_contrato_extenso', 'cinco')}) dias úteis, contados a partir da data de sua convocação, para assinar o Termo de Contrato ou aceitar instrumento equivalente, conforme o caso (Nota de Empenho/Carta Contrato/Autorização), sob pena de decair o direito à contratação, sem prejuízo das sanções previstas neste Aviso de Contratação Direta.")
+    add_item(doc, "10.2.", f"O adjudicatário terá o prazo de {data.get('prazo_assinatura_contrato', '10')} ({data.get('prazo_assinatura_contrato_extenso', 'dez')}) dias úteis, contados a partir da data de sua convocação, para assinar o Termo de Contrato ou aceitar instrumento equivalente, conforme o caso (Nota de Empenho/Carta Contrato/Autorização), sob pena de decair o direito à contratação, sem prejuízo das sanções previstas neste Aviso de Contratação Direta.")
     add_item(doc, "10.4.", "O prazo de vigência da contratação é o estabelecido no Termo de Referência.")
     add_item(doc, "10.5.", "Na assinatura do contrato ou do instrumento equivalente será exigida a comprovação das condições de habilitação e contratação consignadas neste aviso, que deverão ser mantidas pelo fornecedor durante a vigência do contrato.")
 

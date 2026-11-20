@@ -86,7 +86,7 @@ def init_session():
         "prazo_validade_proposta": 60,
         "prazo_docs_habilitacao": 2,
         "prazo_assinatura_arp": 5,
-        "prazo_assinatura_contrato": 5,
+        "prazo_assinatura_contrato": 10,
         "prazo_recolhimento_multa": 15,
         "intervalo_minimo_lances": "R$ 0,01 (um centavo)",
         "percentual_multa": "10",
@@ -164,6 +164,170 @@ def numero_por_extenso(n: int) -> str:
     return mapa.get(n, str(n))
 
 
+
+def build_preview_markdown(data: dict) -> str:
+    """Gera pré-visualização em Markdown do Aviso."""
+    lines = []
+    lines.append("# AVISO DE CONTRATAÇÃO DIRETA")
+    lines.append(f"## Nº {data.get('numero_aviso', 'XXX/AAAA')}")
+    lines.append("")
+    lines.append(f"**Processo Administrativo nº** {data.get('numero_processo', 'xxxxx.xxxxxx/xxxx-xx')}")
+    lines.append("")
+    lines.append(f"**CONTRATANTE/GERENCIADOR (UASG):** {data.get('uasg', 'XXXX')}")
+    lines.append(f"**OBJETO:** {data.get('objeto_resumo', '[objeto]')}")
+    if data.get("registro_precos"):
+        lines.append("**MODALIDADE:** Dispensa Eletrônica para Registro de Preços")
+    else:
+        lines.append("**MODALIDADE:** Dispensa Eletrônica")
+    lines.append(f"**VALOR TOTAL ESTIMADO:** R$ {data.get('valor_total', '00.000,00')}")
+    lines.append(f"**DATA DA SESSÃO PÚBLICA:** {data.get('data_sessao', 'XX/XX/202X')}")
+    lines.append(f"**HORÁRIO DA FASE DE LANCES:** {data.get('horario_lances', 'Das xxh até xxh')}")
+    criterio = data.get("criterio_julgamento", "menor preço")
+    forma = data.get("forma_julgamento", "por item")
+    lines.append(f"**CRITÉRIO DE JULGAMENTO:** {criterio} {forma}")
+    lines.append(f"**TRATAMENTO ME/EPP:** {'SIM' if data.get('tratamento_me_epp') else 'NÃO'}")
+    lines.append(f"**MARGEM DE PREFERÊNCIA:** {'SIM' if data.get('margem_preferencia') else 'NÃO'}")
+    lines.append("")
+    lines.append("---")
+    lines.append("")
+
+    # Preâmbulo
+    orgao = data.get("orgao", "[órgão]")
+    setor = data.get("setor", "[setor]")
+    endereco = data.get("endereco", "[endereço]")
+    inciso = data.get("inciso_art75", "II")
+    preambulo = (
+        f"Torna-se público que o(a) **{orgao}**, por meio do(a) **{setor}**, "
+        f"sediado(a) {endereco}, realizará Dispensa Eletrônica"
+    )
+    if data.get("registro_precos"):
+        preambulo += ", para registro de preços,"
+    preambulo += (
+        f" com critério de julgamento **{criterio}**, na hipótese do art. 75, "
+        f"inciso **{inciso}**, nos termos da Lei nº 14.133/2021, da IN SEGES/ME nº 67/2021, "
+        f"do Decreto nº 11.462/2023 e demais normas aplicáveis."
+    )
+    lines.append(preambulo)
+    lines.append("")
+
+    # 1. Objeto
+    lines.append("## 1. DO OBJETO")
+    lines.append(f"**1.1.** O objeto do presente procedimento é a escolha da proposta mais vantajosa para a contratação, por dispensa de licitação, de **{data.get('objeto_completo', '[objeto]')}**, conforme condições, quantidades e exigências estabelecidas neste Aviso e seus anexos.")
+    if data.get("multiplos_itens"):
+        lines.append("**1.1.1.** Havendo mais de um item, faculta-se ao fornecedor a participação em quantos forem de seu interesse.")
+    lines.append(f"**1.2.** O critério de julgamento adotado será o **{criterio}**.")
+    lines.append("")
+
+    # 2. Registro de Preços
+    if data.get("registro_precos"):
+        lines.append("## 2. DO REGISTRO DE PREÇOS")
+        lines.append("**2.1.** As regras referentes aos órgãos gerenciador e participantes, bem como a eventuais adesões são as que constam da minuta de Ata de Registro de Preços.")
+        lines.append("")
+
+    # 3. Participação
+    lines.append("## 3. DA PARTICIPAÇÃO NA DISPENSA ELETRÔNICA")
+    lines.append("**3.1.** A participação ocorrerá por meio do Sistema de Dispensa Eletrônica (Compras.gov.br).")
+    if data.get("exclusividade_me_epp") and data.get("itens_exclusivos_me"):
+        lines.append(f"**3.2.** Para os itens **{data.get('itens_exclusivos_me')}**, a participação é exclusiva a ME/EPP.")
+    lines.append("**3.3.** Não poderão participar:")
+    lines.append("- quem não atenda às condições deste Aviso;")
+    lines.append("- sociedades com atividade incompatível;")
+    lines.append("- empresas estrangeiras sem representação legal no Brasil;")
+    lines.append("- autores de projeto (quando aplicável);")
+    lines.append("- quem esteja impedido de contratar por sanção;")
+    if data.get("vedar_consorcio"):
+        lines.append("- **pessoas jurídicas reunidas em consórcio;**")
+    if data.get("vedar_oscip"):
+        lines.append("- **OSCIP atuando nessa condição;**")
+    if data.get("vedar_cooperativas"):
+        lines.append("- **sociedades cooperativas;**")
+    if data.get("vedar_pessoas_fisicas"):
+        lines.append("- **pessoas físicas.**")
+    lines.append("")
+
+    # 4. Proposta
+    lines.append("## 4. DO INGRESSO E CADASTRAMENTO DA PROPOSTA")
+    if data.get("permitir_quantitativo_inferior"):
+        lines.append("**4.2.1.** O fornecedor **poderá** oferecer proposta em quantitativo inferior ao máximo previsto.")
+    else:
+        lines.append("**4.2.1.** O fornecedor **NÃO** poderá oferecer proposta em quantitativo inferior ao máximo previsto.")
+    if data.get("precos_diferentes_local"):
+        lines.append("**4.2.2.** Será admitida a previsão de preços diferentes por local/lote.")
+    else:
+        lines.append("**4.2.2.** Não será admitida a previsão de preços diferentes em razão de local de entrega ou lote.")
+    lines.append(f"**4.8.** Prazo de validade da proposta: **{data.get('prazo_validade_proposta', 60)} ({data.get('prazo_validade_proposta_extenso', 'sessenta')}) dias**.")
+    lines.append("")
+
+    # 5. Lances
+    lines.append("## 5. DA FASE DE LANCES")
+    tipo_lance = "valor unitário" if data.get("criterio_julgamento") == "menor preço" else "percentual de desconto"
+    lines.append(f"**5.2.1.** O lance deverá ser ofertado pelo **{tipo_lance}** do item.")
+    lines.append(f"**5.3.2.** Intervalo mínimo entre lances: **{data.get('intervalo_minimo_lances', 'R$ 0,01')}**.")
+    lines.append("**5.7.1.** Encerramento automático no horário indicado, sem prorrogação.")
+    lines.append("")
+
+    # 6. Julgamento
+    lines.append("## 6. DA FASE DE JULGAMENTO E ACEITAÇÃO DAS PROPOSTAS")
+    lines.append("**6.1.** Possibilidade de negociação se a proposta permanecer acima do preço máximo.")
+    if data.get("exigir_planilha_custos"):
+        lines.append("**6.3.1.** Exigida planilha de custos e formação de preços do vencedor.")
+    lines.append("**6.4.** Consulta a Sicaf, CEIS, CNEP e lista de inidôneos do TCU.")
+    lines.append("")
+
+    # 7. Habilitação
+    lines.append("## 7. DA FASE DE HABILITAÇÃO")
+    lines.append(f"**7.6.** Prazo para envio de documentos complementares: **{data.get('prazo_docs_habilitacao', 2)} ({data.get('prazo_docs_habilitacao_extenso', 'duas')}) horas**.")
+    lines.append("")
+
+    # 8/9 ARP
+    if data.get("registro_precos"):
+        lines.append("## 8. DA ATA DE REGISTRO DE PREÇOS")
+        lines.append(f"**8.1.** Prazo para assinatura da ARP: **{data.get('prazo_assinatura_arp', 5)} ({data.get('prazo_assinatura_arp_extenso', 'cinco')}) dias**.")
+        lines.append("**8.8.** Vigência da ARP: 1 (um) ano, prorrogável por igual período se o preço permanecer vantajoso.")
+        if data.get("renovar_quantitativo_arp"):
+            lines.append("**8.8.1.** Em caso de prorrogação, **poderá** ser renovado o quantitativo originalmente registrado.")
+        else:
+            lines.append("**8.8.1.** Em caso de prorrogação, **não poderá** ser renovado o quantitativo originalmente registrado.")
+        lines.append("")
+        lines.append("## 9. DA FORMAÇÃO DO CADASTRO DE RESERVA")
+        lines.append("**9.1.** Inclusão na ata dos fornecedores que aceitarem cotar pelo preço do adjudicatário e dos que mantiverem a proposta original.")
+        lines.append("")
+
+    # 10. Contratação
+    lines.append("## 10. DA CONTRATAÇÃO")
+    lines.append(f"**10.2.** Prazo para assinatura do contrato / aceite de instrumento equivalente: **{data.get('prazo_assinatura_contrato', 10)} ({data.get('prazo_assinatura_contrato_extenso', 'dez')}) dias úteis**.")
+    lines.append("")
+
+    # 11. Sanções
+    lines.append("## 11. DAS INFRAÇÕES E SANÇÕES ADMINISTRATIVAS")
+    lines.append(f"**Multa:** {data.get('percentual_multa', '.......')}% sobre o valor estimado do(s) item(s) prejudicado(s).")
+    lines.append(f"**Prazo para recolhimento administrativo da multa:** {data.get('prazo_recolhimento_multa', 15)} ({data.get('prazo_recolhimento_multa_extenso', 'quinze')}) dias.")
+    lines.append("")
+
+    # 12. Disposições Gerais
+    lines.append("## 12. DAS DISPOSIÇÕES GERAIS")
+    lines.append("**12.1.** Em caso de procedimento fracassado, a Administração poderá republicar o Aviso ou valer-se da pesquisa de preços.")
+    lines.append("**12.6.** Horários observam o horário de Brasília-DF.")
+    lines.append("")
+    lines.append("**Anexos:**")
+    lines.append("- ANEXO I – Termo de Referência")
+    if data.get("registro_precos"):
+        lines.append("- ANEXO II – Minuta de Ata de Registro de Preços")
+    lines.append("- ANEXO III – Minuta de Termo de Contrato")
+    if data.get("exigir_planilha_custos"):
+        lines.append("- ANEXO IV – Planilha de Custos e Formação de Preços")
+    lines.append("")
+    lines.append("---")
+    lines.append(f"**{data.get('local', '[Local]')}**, {data.get('data_documento', '[data]')}.")
+    lines.append("")
+    lines.append(f"**{data.get('autoridade', '[ASSINATURA DA AUTORIDADE COMPETENTE]')}**  ")
+    lines.append(f"*{data.get('cargo_autoridade', '[Cargo]')}*")
+
+    return "\n".join(lines)
+
+
+
+
 # ========== SIDEBAR ==========
 with st.sidebar:
     st.title("📋 Aviso de Dispensa")
@@ -209,6 +373,33 @@ if page == "1. Orientações":
     3. Campos condicionais aparecem conforme suas escolhas.
     4. Use a seção **Importar / Exportar JSON** para salvar o preenchimento.
     5. Quando a AGU/SEGES publicar novo modelo, use a seção **Atualizar Modelo Oficial**.
+    6. Revise a **pré-visualização completa** antes de baixar o .docx.
+    """)
+
+    st.markdown("---")
+    st.subheader("Posição do Aviso no fluxo do IPPC (AGU/MGI)")
+    st.markdown("""
+    O **Aviso de Contratação Direta** é o documento que inicia a fase externa da **dispensa eletrônica**.
+    Antes dele, o processo deve conter (conforme o *Instrumento de Padronização dos Procedimentos de Contratação* – IPPC):
+
+    | Ordem | Documento | Observação |
+    |-------|-----------|------------|
+    | 1 | Documento de Formalização da Demanda (DFD) | Inicia o planejamento |
+    | 2 | Portaria de designação da equipe de planejamento | |
+    | 3 | Estudo Técnico Preliminar (ETP) | |
+    | 4 | Gerenciamento de Riscos | |
+    | 5 | Pesquisa de preços + Relatório | |
+    | 6 | Declarações de disponibilidade/adequação orçamentária | |
+    | 7 | Designação do Agente de Contratação / Equipe de Apoio | |
+    | 8 | **Termo de Referência** | Peça central |
+    | 9 | **Aviso de Contratação Direta** (este gerador) | Fase externa |
+    | 10 | Ata de Registro de Preços (se SRP) / Contrato ou instrumento equivalente | |
+
+    **Pontos do IPPC relevantes para o Aviso:**
+    - Prazo de assinatura do contrato/instrumento na **contratação direta** = **10 dias úteis** (art. 90 + IPPC).
+    - Instrumento de contrato é **facultativo** nas dispensas por valor (art. 75, I e II) e em compras com entrega imediata (art. 95).
+    - O Aviso deve ser divulgado no **PNCP** na mesma data da divulgação (IN SEGES/ME 81/2022).
+    - Use sempre os modelos oficiais da SEGES/AGU e justifique eventuais alterações.
     """)
 
 elif page == "2. Dados Gerais":
@@ -316,7 +507,7 @@ elif page == "5. Prazos e Lances":
         st.session_state.prazo_docs_habilitacao = st.number_input("Prazo docs complementares de habilitação (horas)", min_value=1, max_value=48, value=int(st.session_state.prazo_docs_habilitacao))
         show_note("documentos_complementares")
     with col3:
-        st.session_state.prazo_assinatura_contrato = st.number_input("Prazo assinatura do contrato (dias úteis)", min_value=1, max_value=30, value=int(st.session_state.prazo_assinatura_contrato))
+        st.session_state.prazo_assinatura_contrato = st.number_input("Prazo assinatura do contrato (dias úteis)", min_value=1, max_value=30, value=int(st.session_state.get("prazo_assinatura_contrato", 10)))
 
     if st.session_state.registro_precos:
         show_note("prazo_assinatura_arp")
@@ -356,7 +547,8 @@ elif page == "7. Gerar Documento":
     else:
         st.success("Campos obrigatórios preenchidos. Você pode gerar o documento.")
 
-    with st.expander("Pré-visualização dos dados principais", expanded=True):
+    # Resumo rápido
+    with st.expander("Resumo dos dados principais", expanded=False):
         st.markdown(f"""
         | Campo | Valor |
         |-------|-------|
@@ -424,6 +616,17 @@ elif page == "7. Gerar Documento":
         "autoridade": st.session_state.autoridade,
         "cargo_autoridade": st.session_state.cargo_autoridade,
     }
+
+
+    # ========== PRÉ-VISUALIZAÇÃO COMPLETA DO DOCUMENTO ==========
+    st.subheader("Pré-visualização do Aviso")
+    st.caption("Revise o conteúdo abaixo antes de baixar o arquivo .docx. A formatação final no Word será mais próxima do modelo oficial.")
+
+    preview_md = build_preview_markdown(data)
+    with st.container(border=True):
+        st.markdown(preview_md)
+
+    st.markdown("---")
 
     if st.button("📄 Gerar e baixar Aviso (.docx)", type="primary", disabled=bool(erros)):
         with st.spinner("Gerando documento..."):

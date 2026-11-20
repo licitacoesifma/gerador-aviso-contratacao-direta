@@ -52,7 +52,17 @@ NOTES = {
 
     "verificacao_contrato_assinado": """É importante que a Administração se certifique de que o Termo de Contrato, devolvido, em meio físico ou eletrônico, assinado pela Contratada, não sofreu qualquer alteração.""",
 
-    "termo_contrato_facultativo": """De acordo com o art. 95 da Lei nº 14.133, de 2021, o Termo de Contrato é facultativo nas contratações fundadas no art. 75, incisos I e II (dispensa por valor) e no caso de compras com entrega imediata.Assim, caso não haja Termo de Contrato, este poderá ser substituído por outros instrumentos hábeis, como carta contrato, nota de empenho de despesa ou autorização de compra, nos quais deve constar expressamente a vinculação à proposta e aos termos do aviso de dispensa. A redação do presente tópico procura abarcar ambas as hipóteses, sem prejuízo de eventuais ajustes que se façam necessários.""",
+    "termo_contrato_facultativo": """Conforme art. 95 da Lei nº 14.133/2021 e o Instrumento de Padronização dos Procedimentos de Contratação (IPPC/AGU):
+
+O instrumento de contrato é, em regra, obrigatório. Exceções (facultativo):
+• dispensa de licitação em razão do valor (art. 75, I e II);
+• compras com entrega imediata e integral dos bens, sem obrigações futuras (inclusive assistência técnica), independentemente do valor.
+
+Nessas hipóteses a Administração pode substituir motivadamente o contrato por carta-contrato, nota de empenho, autorização de compra ou ordem de execução de serviço, desde que contenham, no que couber, as cláusulas necessárias do art. 92.
+
+Atenção: mesmo quando o instrumento for dispensado, as cláusulas essenciais (preço, condições de pagamento, reajuste etc.) devem constar do Termo de Referência ou do próprio Aviso.
+
+Publicação no PNCP: 10 dias úteis a partir da assinatura (contratação direta).""",
 
     "nota_empenho_substituto": """Utilizar este subitem no caso de haver o uso de nota de empenho ou instrumento assemelhado, em substituição ao instrumento contratual, nos termos dos incisos I e II do art. 95 da Lei nº 14.133, de 2021.""",
 
